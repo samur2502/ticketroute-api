@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from ticketroute.api.routes.health import router as health_router
+from ticketroute.api.routes.predictions import router as predictions_router
 
 app = FastAPI(
     title="TicketRoute API",
@@ -9,3 +10,4 @@ app = FastAPI(
 )
 
 app.include_router(health_router)
+app.include_router(predictions_router)
