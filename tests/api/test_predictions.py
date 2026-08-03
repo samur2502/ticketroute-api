@@ -20,12 +20,17 @@ def test_create_prediction() -> None:
     body = response.json()
 
     assert UUID(body["id"]).version == 4
-    assert body["intent"] == "unclassified"
-    assert body["confidence"] == 0.0
-    assert body["alternatives"] == []
-    assert body["needs_review"] is True
-    assert body["model_version"] == "no_model"
-    assert body["latency_ms"] == 0
+    assert body["intent"] == "forgotten_pin"
+    assert body["confidence"] == 1.0
+    assert body["alternatives"] == [
+        {
+            "intent": "change_pin",
+            "confidence": 0.5,
+        }
+    ]
+    assert body["needs_review"] is False
+    assert body["model_version"] == "keyword_rules_v1"
+    assert body["latency_ms"] >= 0
 
     created_at = datetime.fromisoformat(body["created_at"])
     assert created_at.tzinfo is not None
@@ -49,3 +54,18 @@ def test_create_prediction_rejects_invalid_request(payload: dict[str, object]) -
 
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
     assert response.json()["detail"]
+
+
+def test_create_prediction_uses_top_k() -> None:
+    with TestClient(app) as client:
+        response = client.post(
+            "/v1/predictions",
+            json={"text": "I forgot my PIN!", "top_k": 1},
+        )
+
+    assert response.status_code == HTTPStatus.CREATED
+
+    body = response.json()
+
+    assert body["intent"] == "forgotten_pin"
+    assert body["alternatives"] == []
