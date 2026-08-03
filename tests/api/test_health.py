@@ -2,12 +2,9 @@ from http import HTTPStatus
 
 from fastapi.testclient import TestClient
 
-from ticketroute.main import app
 
-
-def test_health_check() -> None:
-    with TestClient(app) as client:
-        response = client.get("/health")
+def test_health_check(client: TestClient) -> None:
+    response = client.get("/health")
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {

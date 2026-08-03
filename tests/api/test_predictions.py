@@ -5,15 +5,12 @@ from uuid import UUID
 import pytest
 from fastapi.testclient import TestClient
 
-from ticketroute.main import app
 
-
-def test_create_prediction() -> None:
-    with TestClient(app) as client:
-        response = client.post(
-            "/v1/predictions",
-            json={"text": "I forgot my PIN"},
-        )
+def test_create_prediction(client: TestClient) -> None:
+    response = client.post(
+        "/v1/predictions",
+        json={"text": "I forgot my PIN"},
+    )
 
     assert response.status_code == HTTPStatus.CREATED
 
@@ -48,20 +45,20 @@ def test_create_prediction() -> None:
         {"text": "a" * 2_001},
     ],
 )
-def test_create_prediction_rejects_invalid_request(payload: dict[str, object]) -> None:
-    with TestClient(app) as client:
-        response = client.post("/v1/predictions", json=payload)
+def test_create_prediction_rejects_invalid_request(
+    client: TestClient, payload: dict[str, object]
+) -> None:
+    response = client.post("/v1/predictions", json=payload)
 
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
     assert response.json()["detail"]
 
 
-def test_create_prediction_uses_top_k() -> None:
-    with TestClient(app) as client:
-        response = client.post(
-            "/v1/predictions",
-            json={"text": "I forgot my PIN!", "top_k": 1},
-        )
+def test_create_prediction_uses_top_k(client: TestClient) -> None:
+    response = client.post(
+        "/v1/predictions",
+        json={"text": "I forgot my PIN!", "top_k": 1},
+    )
 
     assert response.status_code == HTTPStatus.CREATED
 
